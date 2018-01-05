@@ -1,6 +1,8 @@
 package com.crypto.coinmarketcap;
 
+import com.crypto.orm.HibernateUtil;
 import com.crypto.utils.CurrencyUtils;
+import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,12 +24,15 @@ public class Snapshot {
             Elements currencies = doc.select("#currencies-all tbody tr");
 
             if (currencies.size() > MINIMUM_COIN_RANK) {
+                Session session = HibernateUtil.getSessionFactory().openSession();
+
                 for (int i=MINIMUM_COIN_RANK; i<currencies.size(); i++) {
                     Element row = currencies.get(i);
 
                     try {
                         Element currencyName = row.getElementsByClass("currency-name-container").first();
                         Element currencySymbol = row.getElementsByClass("col-symbol").first();
+                        Element currencyRank = row.getElementsByClass("text-center").first();
                         Element marketCap = row.getElementsByClass("market-cap").first();
                         Element currencyPrice = row.getElementsByClass("price").first();
                         Element circulatingSupply = row.getElementsByClass("circulating-supply").first();
@@ -39,6 +44,7 @@ public class Snapshot {
                         Currency currency = new Currency(
                                 currencyName.text(),
                                 currencySymbol.text(),
+                                Integer.parseInt(currencyRank.text()),
                                 CurrencyUtils.sanitizeDecimalString(marketCap.text()),
                                 new BigDecimal(currencyPrice.attr("data-usd")),
                                 CurrencyUtils.sanitizeDecimalString(circulatingSupply.text()),
@@ -54,11 +60,17 @@ public class Snapshot {
                                         : null
                         );
 
-                        System.out.println(currency.getName());
+                        session.beginTransaction();
+                        session.save(currency);
+                        session.getTransaction().commit();
+
                     } catch (NullPointerException npe) {
                         continue;
                     }
                 }
+
+                HibernateUtil.shutdown();
+                return;
             }
 
         } catch (IOException ex) {
