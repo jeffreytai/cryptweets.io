@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+    <class name="com.crypto.coinmarketcap.Currency" table="currency_snapshot">
+        <id name="currencyId" type="java.lang.Integer">
+            <column name="Id" />
+            <generator class="identity" />
+        </id>
+        <property name="name" type="string">
+            <column name="Name" length="50" not-null="true" />
+        </property>
+        <property name="symbol" type="string">
+            <column name="Symbol" length="10" not-null="true" />
+        </property>
+        <property name="rank" type="java.lang.Integer">
+            <column name="Rank" not-null="true" />
+        </property>
+        <property name="marketCap" type="java.math.BigDecimal">
+            <column name="MarketCap" not-null="true" />
+        </property>
+        <property name="price" type="java.math.BigDecimal">
+            <column name="Price" not-null="true" />
+        </property>
+        <property name="circulatingSupply" type="java.math.BigDecimal">
+            <column name="CirculatingSupply" not-null="false" />
+        </property>
+        <property name="volume_24h" type="java.math.BigDecimal">
+            <column name="Volume_24h" not-null="false" />
+        </property>
+        <property name="percentChange_1h" type="java.math.BigDecimal">
+            <column name="PercentChange_1h" not-null="false" />
+        </property>
+        <property name="percentChange_24h" type="java.math.BigDecimal">
+            <column name="PercentChange_24h" not-null="false" />
+        </property>
+        <property name="percentChange_7d" type="java.math.BigDecimal">
+            <column name="PercentChange_7d" not-null="false" />
+        </property>
+        <property name="timestamp" type="java.util.Date">
+            <column name="Timestamp" not-null="false" />
+        </property>
+    </class>
+</hibernate-mapping>
