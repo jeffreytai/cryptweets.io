@@ -1,11 +1,11 @@
-package com.crypto.orm;
+package com.crypto.builder;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 
 import java.util.Properties;
 
-public class HibernateUtil {
+public class SessionFactoryBuilder {
 
     private static final SessionFactory sessionFactory = buildSessionFactory();
 
