@@ -7,4 +7,4 @@ target/
 # Java class files
 *.class
 
-src/main/resources/*.properties
+**/resources/*.properties
