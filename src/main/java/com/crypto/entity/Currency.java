@@ -1,4 +1,4 @@
-package com.crypto.coinmarketcap;
+package com.crypto.entity;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -65,8 +65,16 @@ public class Currency {
      */
     private Date timestamp;
 
+    /**
+     * Batch/snapshot number
+     */
+    private Integer batchNum;
 
-    public Currency(String name, String symbol, Integer rank, BigDecimal marketCap, BigDecimal price, BigDecimal circulatingSupply, BigDecimal volume_24h, BigDecimal percentChange_1h, BigDecimal percentChange_24h, BigDecimal percentChange_7d) {
+
+    public Currency(String name, String symbol, Integer rank,
+                    BigDecimal marketCap, BigDecimal price, BigDecimal circulatingSupply, BigDecimal volume_24h,
+                    BigDecimal percentChange_1h, BigDecimal percentChange_24h, BigDecimal percentChange_7d,
+                    Date timestamp, Integer batchNum) {
         this.name = name;
         this.symbol = symbol;
         this.rank = rank;
@@ -77,7 +85,8 @@ public class Currency {
         this.percentChange_1h = percentChange_1h;
         this.percentChange_7d = percentChange_7d;
         this.percentChange_24h = percentChange_24h;
-        this.timestamp = new Date();
+        this.timestamp = timestamp;
+        this.batchNum = batchNum;
     }
 
     /**
@@ -178,5 +187,13 @@ public class Currency {
 
     public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public Integer getBatchNum() {
+        return batchNum;
+    }
+
+    public void setBatchNum(Integer batchNum) {
+        this.batchNum = batchNum;
     }
 }

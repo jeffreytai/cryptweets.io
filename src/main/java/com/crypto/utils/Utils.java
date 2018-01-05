@@ -2,7 +2,7 @@ package com.crypto.utils;
 
 import java.math.BigDecimal;
 
-public class CurrencyUtils {
+public class Utils {
 
     /**
      * Replace all non-numeric characters except for decimals in a string

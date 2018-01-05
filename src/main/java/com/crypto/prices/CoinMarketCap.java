@@ -1,7 +1,8 @@
-package com.crypto.coinmarketcap;
+package com.crypto.prices;
 
-import com.crypto.orm.HibernateUtil;
-import com.crypto.utils.CurrencyUtils;
+import com.crypto.entity.Currency;
+import com.crypto.builder.SessionFactoryBuilder;
+import com.crypto.utils.Utils;
 import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -10,22 +11,36 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
-public class Snapshot {
+public class CoinMarketCap {
+
+
+    private final int MINIMUM_COIN_RANK;
+
+    public CoinMarketCap(int minimumCoinRank) {
+        this.MINIMUM_COIN_RANK = minimumCoinRank;
+    }
 
     /**
      * Grab all coins that has a minimum coin rank of 200 by market cap
+     * @return
      */
-    private static final int MINIMUM_COIN_RANK = 200;
+    public List<Currency> loadCurrencies() {
+        List<Currency> rankedCurrencies = new ArrayList<>();
 
-    public static void takeSnapshot() {
         try {
             Document doc = Jsoup.connect("https://coinmarketcap.com/all/views/all/").get();
             Elements currencies = doc.select("#currencies-all tbody tr");
+            // initializing currentDate on the outside so that all currencies in the same batch/snapshot will have identical dates
+            Date currentDate = new Date();
+
+            // Grab the previous batch number
+            int previousBatchNum = 0;
 
             if (currencies.size() > MINIMUM_COIN_RANK) {
-                Session session = HibernateUtil.getSessionFactory().openSession();
-
                 for (int i=MINIMUM_COIN_RANK; i<currencies.size(); i++) {
                     Element row = currencies.get(i);
 
@@ -45,10 +60,10 @@ public class Snapshot {
                                 currencyName.text(),
                                 currencySymbol.text(),
                                 Integer.parseInt(currencyRank.text()),
-                                CurrencyUtils.sanitizeDecimalString(marketCap.text()),
+                                Utils.sanitizeDecimalString(marketCap.text()),
                                 new BigDecimal(currencyPrice.attr("data-usd")),
-                                CurrencyUtils.sanitizeDecimalString(circulatingSupply.text()),
-                                CurrencyUtils.sanitizeDecimalString(volume_24h.text()),
+                                Utils.sanitizeDecimalString(circulatingSupply.text()),
+                                Utils.sanitizeDecimalString(volume_24h.text()),
                                 percentChange_1h != null && percentChange_1h.hasAttr("data-usd")
                                         ? new BigDecimal(percentChange_1h.attr("data-usd"))
                                         : null,
@@ -57,24 +72,47 @@ public class Snapshot {
                                         : null,
                                 percentChange_7d != null && percentChange_7d.hasAttr("data-usd")
                                         ? new BigDecimal(percentChange_7d.attr("data-usd"))
-                                        : null
+                                        : null,
+                                currentDate,
+                                previousBatchNum + 1
                         );
 
-                        session.beginTransaction();
-                        session.save(currency);
-                        session.getTransaction().commit();
+                        rankedCurrencies.add(currency);
 
                     } catch (NullPointerException npe) {
                         continue;
                     }
                 }
-
-                HibernateUtil.shutdown();
-                return;
             }
 
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+
+        return rankedCurrencies;
+    }
+
+    /**
+     * Given a list of coins, save them to the database
+     * @param currencies
+     */
+    public void saveSnapshot(List<Currency> currencies) {
+        Session session = SessionFactoryBuilder.getSessionFactory().openSession();
+        session.beginTransaction();
+
+        currencies.forEach(currency -> session.save(currency));
+
+        session.getTransaction().commit();
+
+        SessionFactoryBuilder.shutdown();
+    }
+
+    /**
+     * Grab the list of coins and save them to the database
+     */
+    public void saveSnapshot() {
+        List<Currency> currencies = loadCurrencies();
+
+        saveSnapshot(currencies);
     }
 }

@@ -17,5 +17,9 @@ create table currency_snapshot (
     PercentChange_24h decimal(10,2),
     PercentChange_7d decimal(10,2),
     Timestamp datetime,
+    BatchNum int not null,
     primary key (Id)
 );
+
+create index ix_currency_name on currency_snapshot (name);
+create index ix_currency_symbol on currency_snapshot (symbol);
