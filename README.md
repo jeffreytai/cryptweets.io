@@ -13,4 +13,4 @@ hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 
 To use the Solume.io API, add a "solumeio.properties" file under src/main/resources with the following format:
-id-token=<API Token>
+id-token=&lt;API Token&gt;
