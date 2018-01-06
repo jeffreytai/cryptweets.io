@@ -2,8 +2,10 @@ package com.crypto.prices;
 
 import com.crypto.entity.Currency;
 import com.crypto.builder.SessionFactoryBuilder;
+import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -34,11 +36,12 @@ public class CoinMarketCap {
         try {
             Document doc = Jsoup.connect("https://coinmarketcap.com/all/views/all/").get();
             Elements currencies = doc.select("#currencies-all tbody tr");
+
             // initializing currentDate on the outside so that all currencies in the same batch/snapshot will have identical dates
             Date currentDate = new Date();
 
             // Grab the previous batch number
-            int previousBatchNum = 0;
+            int previousBatchNum = findLastBatchNumber();
 
             if (currencies.size() > MINIMUM_COIN_RANK) {
                 for (int i=MINIMUM_COIN_RANK; i<currencies.size(); i++) {
@@ -93,26 +96,24 @@ public class CoinMarketCap {
     }
 
     /**
-     * Given a list of coins, save them to the database
-     * @param currencies
-     */
-    public void saveSnapshot(List<Currency> currencies) {
-        Session session = SessionFactoryBuilder.getSessionFactory().openSession();
-        session.beginTransaction();
-
-        currencies.forEach(currency -> session.save(currency));
-
-        session.getTransaction().commit();
-
-        SessionFactoryBuilder.shutdown();
-    }
-
-    /**
      * Grab the list of coins and save them to the database
      */
     public void saveSnapshot() {
         List<Currency> currencies = loadCurrencies();
 
-        saveSnapshot(currencies);
+        DbUtils.saveEntities(currencies);
+    }
+
+    /**
+     * Returns the max batch number from the Currency table
+     * @return
+     */
+    private Integer findLastBatchNumber() {
+        Session session = SessionFactoryBuilder.getSessionFactory().openSession();
+        Query query = session.createQuery("select MAX(c.batchNum) from Currency c");
+        Object maxBatchNum = query.list().get(0);
+        session.close();
+
+        return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
     }
 }

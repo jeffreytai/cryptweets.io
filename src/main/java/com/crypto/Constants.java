@@ -1,4 +1,4 @@
-package com.crypto.utils;
+package com.crypto;
 
 public class Constants {
 

@@ -1,6 +1,7 @@
 package com.crypto.utils;
 
 import java.math.BigDecimal;
+import java.util.Date;
 
 public class Utils {
 
@@ -12,5 +13,24 @@ public class Utils {
     public static BigDecimal sanitizeDecimalString(String value) {
         String sanitizedValue = value.replaceAll("[^\\d.]", "");
         return new BigDecimal(sanitizedValue);
+    }
+
+    /**
+     * Convert Unix timestamp to datetime
+     * @param unixTimestamp
+     * @return
+     */
+    public static Date convertUnixToDateTime(Long unixTimestamp) {
+        Date date = new Date(unixTimestamp * 1000);
+        return date;
+    }
+
+    /**
+     * Convert datetime to Unix timestamp
+     * @param datetime
+     * @return
+     */
+    public static Long convertDatetimeToUnix(Date datetime) {
+        return datetime.getTime();
     }
 }
