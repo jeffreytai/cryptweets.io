@@ -7,5 +7,6 @@
         <property name="transaction.factory_class">org.hibernate.transaction.JDBCTransactionFactory</property>
 
         <mapping resource="currency.hbm.xml" />
+        <mapping resource="coinsentiment.hbm.xml" />
     </session-factory>
 </hibernate-configuration>
