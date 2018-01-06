@@ -12,5 +12,5 @@ hibernate.show_sql=true<br>
 hibernate.dialect=org.hibernate.dialect.MySQLDialect
 
 
-To use the Solume.io API, add a "solumeio.properties" file under src/main/resources with the following format:
+To use the Solume.io API, add a "solumeio.properties" file under src/main/resources with the following format:<br/>
 id-token=&lt;API Token&gt;
