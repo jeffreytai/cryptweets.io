@@ -94,7 +94,6 @@ public class SolumeIO {
         List<CoinSentiment> coinSentiments = new ArrayList<>();
 
         Date currentDate = new Date();
-        Long currentTimestamp = Utils.convertDatetimeToUnix(currentDate);
 
         Integer previousBatchNum = findLastBatchNumber();
 
@@ -109,7 +108,7 @@ public class SolumeIO {
                     Long.parseLong(info.get("reddit_volume_24h").toString()),
                     new BigDecimal(info.get("change_24h").toString()),
                     Long.parseLong(info.get("volume_24h").toString()),
-                    currentTimestamp,
+                    currentDate,
                     previousBatchNum + 1
             );
 
