@@ -11,7 +11,7 @@ create table CoinSentiment (
     RedditVolume_24h long,
     SocialVolumeChange_24h decimal(10,2),
     SocialVolume_24h long,
-    Timestamp long,
+    Timestamp datetime,
     BatchNum int not null,
     primary key (Id)
 );

@@ -29,7 +29,7 @@
         <property name="socialVolume_24h" type="java.lang.Long">
             <column name="SocialVolume_24h" not-null="false" />
         </property>
-        <property name="timestamp" type="java.lang.Long">
+        <property name="timestamp" type="java.util.Date">
             <column name="Timestamp" not-null="false" />
         </property>
         <property name="batchNum" type="java.lang.Integer">

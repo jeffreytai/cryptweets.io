@@ -1,7 +1,7 @@
 package com.crypto.entity;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.util.Date;
 
 public class CoinSentiment {
 
@@ -46,9 +46,9 @@ public class CoinSentiment {
     private Long socialVolume_24h;
 
     /**
-     * Unix time format
+     * Timestamp
      */
-    private Long timestamp;
+    private Date timestamp;
 
     /**
      * Batch/snapshot number
@@ -59,7 +59,7 @@ public class CoinSentiment {
     public CoinSentiment(String symbol, BigDecimal twitterChange_24h, Long twitterVolume_24h,
                          BigDecimal redditChange_24h, Long redditVolume_24h,
                          BigDecimal socialVolumeChange_24h, Long socialVolume_24h,
-                         Long timestamp, Integer batchNum) {
+                         Date timestamp, Integer batchNum) {
         this.symbol = symbol;
         this.twitterChange_24h = twitterChange_24h;
         this.twitterVolume_24h = twitterVolume_24h;
@@ -139,11 +139,11 @@ public class CoinSentiment {
         this.socialVolume_24h = socialVolume_24h;
     }
 
-    public Long getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(Long timestamp) {
+    public void setTimestamp(Date timestamp) {
         this.timestamp = timestamp;
     }
 
