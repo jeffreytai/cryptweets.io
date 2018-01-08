@@ -8,7 +8,7 @@ public class Currency {
     /**
      * Auto-generated Id
      */
-    private Integer currencyId;
+    private Long currencyId;
 
     /**
      * Full name of token
@@ -93,11 +93,11 @@ public class Currency {
      * Getters and setters for ORM
      */
 
-    public Integer getCurrencyId() {
+    public Long getCurrencyId() {
         return currencyId;
     }
 
-    public void setCurrencyId(Integer currencyId) {
+    public void setCurrencyId(Long currencyId) {
         this.currencyId = currencyId;
     }
 

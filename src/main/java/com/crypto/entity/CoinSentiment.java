@@ -8,7 +8,7 @@ public class CoinSentiment {
     /**
      * Auto-generated Id
      */
-    private Integer Id;
+    private Long Id;
 
     /**
      * Coin symbol
@@ -75,11 +75,11 @@ public class CoinSentiment {
      * Getters and setters for ORM
      */
 
-    public Integer getId() {
+    public Long getId() {
         return Id;
     }
 
-    public void setId(Integer Id) {
+    public void setId(Long Id) {
         this.Id = Id;
     }
 
