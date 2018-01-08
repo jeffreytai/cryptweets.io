@@ -11,8 +11,13 @@ public class Utils {
      * @return
      */
     public static BigDecimal sanitizeDecimalString(String value) {
-        String sanitizedValue = value.replaceAll("[^\\d.]", "");
-        return new BigDecimal(sanitizedValue);
+        try {
+            String sanitizedValue = value.replaceAll("[^\\d.]", "");
+            return new BigDecimal(sanitizedValue);
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+
     }
 
     /**

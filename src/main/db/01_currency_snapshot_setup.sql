@@ -23,3 +23,4 @@ create table currency_snapshot (
 
 create index ix_currency_name on currency_snapshot (name);
 create index ix_currency_symbol on currency_snapshot (symbol);
+create index ix_currency_batchNum on currency_snapshot (batchNum);

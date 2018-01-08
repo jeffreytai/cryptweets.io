@@ -1,8 +1,9 @@
 package com.crypto.utils;
 
-import com.crypto.builder.SessionFactoryBuilder;
+import com.crypto.builder.PersistenceManager;
 import org.hibernate.Session;
 
+import javax.persistence.EntityManager;
 import java.util.List;
 
 public class DbUtils {
@@ -12,12 +13,17 @@ public class DbUtils {
      * @param entities
      */
     public static void saveEntities(List<?> entities) {
-        Session session = SessionFactoryBuilder.getSessionFactory().openSession();
+        EntityManager em = PersistenceManager.getEntityManager();
 
-        session.beginTransaction();
-        entities.forEach(entity -> session.save(entity));
-        session.getTransaction().commit();
+        try {
+            em.getTransaction().begin();
+            entities.forEach(entity -> em.persist(entity));
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            em.getTransaction().rollback();
+        }
 
-        SessionFactoryBuilder.shutdown();
+        em.close();
+        PersistenceManager.shutdown();
     }
 }

@@ -1,73 +1,96 @@
 package com.crypto.entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Entity
+@Table(name = "currency_snapshot")
 public class Currency {
 
     /**
      * Auto-generated Id
      */
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "Id")
     private Long currencyId;
 
     /**
      * Full name of token
      */
+    @Column(name = "Name", nullable = false)
     private String name;
 
     /**
      * Ticker (e.g. XRP, BTC)
      */
+    @Column(name = "Symbol", nullable = false)
     private String symbol;
 
     /**
      * Rank by market cap
      */
+    @Column(name = "Rank", nullable = false)
     private Integer rank;
 
     /**
      * Market cap in US dollars
      */
+    @Column(name = "MarketCap", nullable = false)
     private BigDecimal marketCap;
 
     /**
      * Price in US dollars
      */
+    @Column(name = "Price", nullable = false)
     private BigDecimal price;
 
     /**
      * Amount of tokens in circulation
      */
+    @Column(name = "CirculatingSupply")
     private BigDecimal circulatingSupply;
 
     /**
      * Volume of tokens in the past 24 hours in US dollars
      */
+    @Column(name = "Volume_24h")
     private BigDecimal volume_24h;
 
     /**
      * Percent change in 1 hour
      */
+    @Column(name = "PercentChange_1h")
     private BigDecimal percentChange_1h;
 
     /**
      * Percent change in 24 hour
      */
+    @Column(name = "PercentChange_24h")
     private BigDecimal percentChange_24h;
 
     /**
      * Percent change in 7 days
      */
+    @Column(name = "PercentChange_7d")
     private BigDecimal percentChange_7d;
 
     /**
      * Time in which the entity was created
      */
+    @Column(name = "Timestamp")
     private Date timestamp;
 
     /**
      * Batch/snapshot number
      */
+    @Column(name = "BatchNum", nullable = false)
     private Integer batchNum;
 
 
