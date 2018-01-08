@@ -1,6 +1,6 @@
 # cryptweets.io
 
-To properly save coins into local MySQL database, add a "hibernate.properties" file under src/main/resources with the following format:
+To properly save coins into local MySQL database, add a "application.properties" file under src/main/resources with the following format:
 
 javax.persistence.jdbc.driver=com.mysql.cj.jdbc.Driver<br/>
 javax.persistence.jdbc.url=jdbc:mysql://&lt;hostname&gt;:&lt;port&gt;/&lt;database&gt;?useSSL=false<br/>
