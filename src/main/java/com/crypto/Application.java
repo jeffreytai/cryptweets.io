@@ -1,5 +1,6 @@
 package com.crypto;
 
+import com.crypto.prices.CoinMarketCap;
 import com.crypto.sentiment.SolumeIO;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 @SpringBootApplication
 public class Application {
 
+    // TODO: Import connection pooling (hibernate-c3p0)
     public static void main(String args[]) {
         SpringApplication.run(Application.class, args);
 

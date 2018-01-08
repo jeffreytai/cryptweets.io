@@ -1,16 +1,16 @@
 package com.crypto.prices;
 
 import com.crypto.entity.Currency;
-import com.crypto.builder.SessionFactoryBuilder;
+import com.crypto.builder.PersistenceManager;
 import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import javax.persistence.Query;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -109,10 +109,8 @@ public class CoinMarketCap {
      * @return
      */
     private Integer findLastBatchNumber() {
-        Session session = SessionFactoryBuilder.getSessionFactory().openSession();
-        Query query = session.createQuery("select MAX(c.batchNum) from Currency c");
-        Object maxBatchNum = query.list().get(0);
-        session.close();
+        Query query = PersistenceManager.getEntityManager().createQuery("select MAX(c.batchNum) from Currency c");
+        Object maxBatchNum = query.getResultList().get(0);
 
         return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
     }

@@ -5,7 +5,7 @@ public class Constants {
     /**
      * Minimum rank for a coin to be loaded
      */
-    public static final Integer MINIMUM_COIN_RANK = 200;
+    public static final Integer MINIMUM_COIN_RANK = 0;
 
     /**
      * Threshold for Market Cap rank change

@@ -1,58 +1,78 @@
 package com.crypto.entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Entity
+@Table(name = "CoinSentiment")
 public class CoinSentiment {
 
     /**
      * Auto-generated Id
      */
-    private Integer Id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "Id")
+    private Long Id;
 
     /**
      * Coin symbol
      */
+    @Column(name = "Symbol", nullable = false)
     private String symbol;
 
     /**
      * Percent of change in social volume from twitter in the past 24h
      */
+    @Column(name = "TwitterChange_24h")
     private BigDecimal twitterChange_24h;
 
     /**
      * Last social volume from twitter in the past 24h
      */
+    @Column(name = "TwitterVolume_24h")
     private Long twitterVolume_24h;
 
     /**
      * Percent of change in social volume from reddit in the past 24h
      */
+    @Column(name = "RedditChange_24h")
     private BigDecimal redditChange_24h;
 
     /**
      * Last social volume from reddit in the past 24h
      */
+    @Column(name = "RedditVolume_24h")
     private Long redditVolume_24h;
 
     /**
      * The percent of change in social volume from all sources in the past 24h
      */
+    @Column(name = "SocialVolumeChange_24h")
     private BigDecimal socialVolumeChange_24h;
 
     /**
      * Last social volume from all sources in the past 24h
      */
+    @Column(name = "SocialVolume_24h")
     private Long socialVolume_24h;
 
     /**
      * Timestamp
      */
+    @Column(name = "Timestamp")
     private Date timestamp;
 
     /**
      * Batch/snapshot number
      */
+    @Column(name = "BatchNum", nullable = false)
     private Integer batchNum;
 
 
@@ -75,11 +95,11 @@ public class CoinSentiment {
      * Getters and setters for ORM
      */
 
-    public Integer getId() {
+    public Long getId() {
         return Id;
     }
 
-    public void setId(Integer Id) {
+    public void setId(Long Id) {
         this.Id = Id;
     }
 
