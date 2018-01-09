@@ -1,5 +1,6 @@
-package com.crypto.entity;
+package com.crypto.orm.entity;
 
+import javax.annotation.concurrent.Immutable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -11,6 +12,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "currency_snapshot")
+@Immutable
 public class Currency {
 
     /**
@@ -93,6 +95,7 @@ public class Currency {
     @Column(name = "BatchNum", nullable = false)
     private Integer batchNum;
 
+    public Currency() {}
 
     public Currency(String name, String symbol, Integer rank,
                     BigDecimal marketCap, BigDecimal price, BigDecimal circulatingSupply, BigDecimal volume_24h,

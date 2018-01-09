@@ -1,4 +1,6 @@
-package com.crypto.entity;
+package com.crypto.orm.entity;
+
+import jdk.nashorn.internal.ir.annotations.Immutable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,6 +13,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "CoinSentiment")
+@Immutable
 public class CoinSentiment {
 
     /**
@@ -75,6 +78,7 @@ public class CoinSentiment {
     @Column(name = "BatchNum", nullable = false)
     private Integer batchNum;
 
+    public CoinSentiment() {}
 
     public CoinSentiment(String symbol, BigDecimal twitterChange_24h, Long twitterVolume_24h,
                          BigDecimal redditChange_24h, Long redditVolume_24h,

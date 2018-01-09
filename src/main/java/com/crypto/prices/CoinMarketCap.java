@@ -1,7 +1,9 @@
 package com.crypto.prices;
 
-import com.crypto.entity.Currency;
-import com.crypto.builder.PersistenceManager;
+import com.crypto.Constants;
+import com.crypto.orm.entity.Currency;
+import com.crypto.orm.repository.CurrencyRepository;
+import com.crypto.slack.SlackWebhook;
 import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
 
@@ -10,15 +12,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import javax.persistence.Query;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public class CoinMarketCap {
-
 
     private final int MINIMUM_COIN_RANK;
 
@@ -30,7 +31,7 @@ public class CoinMarketCap {
      * Grab all coins that has a minimum coin rank of 200 by market cap
      * @return
      */
-    public List<Currency> loadCurrencies() {
+    public List<Currency> loadCurrencies(Integer previousBatchNum) {
         List<Currency> rankedCurrencies = new ArrayList<>();
 
         try {
@@ -39,9 +40,6 @@ public class CoinMarketCap {
 
             // initializing currentDate on the outside so that all currencies in the same batch/snapshot will have identical dates
             Date currentDate = new Date();
-
-            // Grab the previous batch number
-            int previousBatchNum = findLastBatchNumber();
 
             if (currencies.size() > MINIMUM_COIN_RANK) {
                 for (int i=MINIMUM_COIN_RANK; i<currencies.size(); i++) {
@@ -96,21 +94,51 @@ public class CoinMarketCap {
     }
 
     /**
-     * Grab the list of coins and save them to the database
+     * Grab the current list of coins from coin market cap.
+     * If there was a previous batch of coins, check to see the movement in market cap
+     * If the change in movement meets the threshold, notify the slack channel
+     * @param saveCurrencies
      */
-    public void saveSnapshot() {
-        List<Currency> currencies = loadCurrencies();
+    public void analyzeCurrencies(boolean saveCurrencies) {
+        // Find the previous batch num
+        int previousBatchNum = findLastBatchNumber();
 
-        DbUtils.saveEntities(currencies);
+        List<Currency> currencies = loadCurrencies(previousBatchNum);
+
+        if (previousBatchNum > 0) {
+            List<Currency> previousBatch = CurrencyRepository.findByBatchNum(previousBatchNum);
+
+            SlackWebhook slack = new SlackWebhook();
+
+            for (Currency current : currencies) {
+                Optional<Currency> previous = previousBatch.stream().filter(c -> c.getSymbol().equals(current.getSymbol())).findFirst();
+                if (previous.isPresent()) {
+                    Integer deltaRank = previous.get().getRank() - current.getRank();
+
+                    if (deltaRank > Constants.RANK_CHANGE_THRESHOLD) {
+                        String message = String.format("%s (%s) moved up %d positions from %d to %d. " +
+                                "The price went from $%f to $%f.", current.getName(), current.getSymbol(), deltaRank,
+                                previous.get().getRank(), current.getRank(), previous.get().getPrice(), current.getPrice());
+
+                        slack.sendMessage(message);
+                    }
+                }
+            }
+
+            slack.shutdown();
+        }
+
+        if (saveCurrencies)
+            DbUtils.saveEntities(currencies);
     }
 
     /**
      * Returns the max batch number from the Currency table
      * @return
      */
+    // TODO: Move this to a DbUtils function
     private Integer findLastBatchNumber() {
-        Query query = PersistenceManager.getEntityManager().createQuery("select MAX(c.batchNum) from Currency c");
-        Object maxBatchNum = query.getResultList().get(0);
+        Object maxBatchNum = DbUtils.runSingularResultQuery("select MAX(c.batchNum) from Currency c");
 
         return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
     }

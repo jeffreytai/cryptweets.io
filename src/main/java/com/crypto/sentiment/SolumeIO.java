@@ -1,14 +1,11 @@
 package com.crypto.sentiment;
 
-import com.crypto.builder.PersistenceManager;
-import com.crypto.entity.CoinSentiment;
+import com.crypto.orm.entity.CoinSentiment;
 import com.crypto.exception.NoResultsFoundException;
 import com.crypto.utils.ApiUtils;
 import com.crypto.utils.DbUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -131,8 +128,7 @@ public class SolumeIO {
      * @return
      */
     public Integer findLastBatchNumber() {
-        javax.persistence.Query query = PersistenceManager.getEntityManager().createQuery("select MAX(c.batchNum) from CoinSentiment c");
-        Object maxBatchNum = query.getResultList().get(0);
+        Object maxBatchNum = DbUtils.runSingularResultQuery("select MAX(c.batchNum) from CoinSentiment c");
 
         return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
     }

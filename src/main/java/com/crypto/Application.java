@@ -14,12 +14,13 @@ import java.util.Arrays;
 public class Application {
 
     // TODO: Import connection pooling (hibernate-c3p0)
+    // TODO: Write unit tests
     public static void main(String args[]) {
-        SpringApplication.run(Application.class, args);
+//        SpringApplication.run(Application.class, args);
 
         // takes the current snapshot of coin market cap and adds it to the database
-//        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
-//        coinMarketCap.saveSnapshot();
+        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
+        coinMarketCap.analyzeCurrencies(false);
 
         // retrieves sentiment analysis of all coins and adds it to the database
 //        SolumeIO solume = new SolumeIO();
