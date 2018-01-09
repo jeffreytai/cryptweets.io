@@ -1,9 +1,9 @@
 package com.crypto.utils;
 
-import com.crypto.builder.PersistenceManager;
+import com.crypto.hibernate.HibernateUtils;
 import org.hibernate.Session;
 
-import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.util.List;
 
 public class DbUtils {
@@ -13,17 +13,37 @@ public class DbUtils {
      * @param entities
      */
     public static void saveEntities(List<?> entities) {
-        EntityManager em = PersistenceManager.getEntityManager();
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
 
         try {
-            em.getTransaction().begin();
-            entities.forEach(entity -> em.persist(entity));
-            em.getTransaction().commit();
+            session.getTransaction().begin();
+            entities.forEach(entity -> session.save(entity));
+            session.getTransaction().commit();
         } catch (Exception ex) {
-            em.getTransaction().rollback();
+            session.getTransaction().rollback();
+            ex.printStackTrace();
         }
 
-        em.close();
-        PersistenceManager.shutdown();
+        session.close();
+    }
+
+
+
+    public static Object runSingularResultQuery(String query) {
+        Object result = null;
+        Session session = HibernateUtils.getSessionFactory().getCurrentSession();
+
+        try {
+            session.getTransaction().begin();
+            Query q = session.createQuery(query);
+            result = q.getSingleResult();
+            session.getTransaction().commit();
+        } catch (Exception ex) {
+            session.getTransaction().rollback();
+            ex.printStackTrace();
+        }
+
+        session.close();
+        return result;
     }
 }

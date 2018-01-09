@@ -7,12 +7,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import java.util.Arrays;
 
 @SpringBootApplication
-@EnableJpaRepositories("com.crypto.repository")
 public class Application {
 
     // TODO: Import connection pooling (hibernate-c3p0)
@@ -21,12 +19,12 @@ public class Application {
 //        SpringApplication.run(Application.class, args);
 
         // takes the current snapshot of coin market cap and adds it to the database
-        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
-        coinMarketCap.analyzeCurrencies(false);
+//        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
+//        coinMarketCap.analyzeCurrencies(false);
 
         // retrieves sentiment analysis of all coins and adds it to the database
-//        SolumeIO solume = new SolumeIO();
-//        solume.saveSentiments();
+        SolumeIO solume = new SolumeIO();
+        solume.saveSentiments();
     }
 
     /**

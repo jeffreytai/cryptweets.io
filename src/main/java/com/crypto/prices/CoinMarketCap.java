@@ -1,16 +1,15 @@
 package com.crypto.prices;
 
 import com.crypto.entity.Currency;
-import com.crypto.builder.PersistenceManager;
-import com.crypto.repository.CurrencyRepository;
+import com.crypto.hibernate.HibernateUtils;
 import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
 
+import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Query;
 import java.io.IOException;
@@ -20,9 +19,6 @@ import java.util.Date;
 import java.util.List;
 
 public class CoinMarketCap {
-
-    @Autowired
-    private CurrencyRepository currencyRepository;
 
     private final int MINIMUM_COIN_RANK;
 
@@ -103,14 +99,14 @@ public class CoinMarketCap {
         // Find the previous batch num
         int previousBatchNum = findLastBatchNumber();
 
-        if (previousBatchNum > 0) {
-            List<Currency> previousBatch = currencyRepository.findByBatchNum(previousBatchNum);
-
-            System.out.println(previousBatch);
-            for (Currency c : previousBatch) {
-                System.out.println(c.getName());
-            }
-        }
+//        if (previousBatchNum > 0) {
+//            List<Currency> previousBatch = currencyRepository.findByBatchNum(previousBatchNum);
+//
+//            System.out.println(previousBatch);
+//            for (Currency c : previousBatch) {
+//                System.out.println(c.getName());
+//            }
+//        }
 
         List<Currency> currencies = loadCurrencies(previousBatchNum);
 
@@ -122,9 +118,9 @@ public class CoinMarketCap {
      * Returns the max batch number from the Currency table
      * @return
      */
+    // TODO: Move this to a DbUtils function
     private Integer findLastBatchNumber() {
-        Query query = PersistenceManager.getEntityManager().createQuery("select MAX(c.batchNum) from Currency c");
-        Object maxBatchNum = query.getResultList().get(0);
+        Object maxBatchNum = DbUtils.runSingularResultQuery("select MAX(c.batchNum) from Currency c");
 
         return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
     }
