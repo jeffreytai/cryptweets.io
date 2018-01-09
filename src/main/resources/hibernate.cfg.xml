@@ -7,7 +7,7 @@
     <session-factory>
         <!-- Bootstrapped properties -->
 
-        <mapping class="com.crypto.entity.Currency" />
-        <mapping class="com.crypto.entity.CoinSentiment" />
+        <mapping class="com.crypto.orm.entity.Currency" />
+        <mapping class="com.crypto.orm.entity.CoinSentiment" />
     </session-factory>
 </hibernate-configuration>

@@ -1,13 +1,12 @@
 package com.crypto.sentiment;
 
-import com.crypto.entity.CoinSentiment;
+import com.crypto.orm.entity.CoinSentiment;
 import com.crypto.exception.NoResultsFoundException;
 import com.crypto.utils.ApiUtils;
 import com.crypto.utils.DbUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import javax.persistence.Query;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;

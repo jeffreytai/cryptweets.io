@@ -1,22 +1,23 @@
 package com.crypto.prices;
 
-import com.crypto.entity.Currency;
-import com.crypto.hibernate.HibernateUtils;
+import com.crypto.Constants;
+import com.crypto.orm.entity.Currency;
+import com.crypto.orm.repository.CurrencyRepository;
+import com.crypto.slack.SlackWebhook;
 import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
 
-import org.hibernate.Session;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import javax.persistence.Query;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 public class CoinMarketCap {
 
@@ -93,22 +94,39 @@ public class CoinMarketCap {
     }
 
     /**
-     * Grab the list of coins and save them to the database
+     * Grab the current list of coins from coin market cap.
+     * If there was a previous batch of coins, check to see the movement in market cap
+     * If the change in movement meets the threshold, notify the slack channel
+     * @param saveCurrencies
      */
     public void analyzeCurrencies(boolean saveCurrencies) {
         // Find the previous batch num
         int previousBatchNum = findLastBatchNumber();
 
-//        if (previousBatchNum > 0) {
-//            List<Currency> previousBatch = currencyRepository.findByBatchNum(previousBatchNum);
-//
-//            System.out.println(previousBatch);
-//            for (Currency c : previousBatch) {
-//                System.out.println(c.getName());
-//            }
-//        }
-
         List<Currency> currencies = loadCurrencies(previousBatchNum);
+
+        if (previousBatchNum > 0) {
+            List<Currency> previousBatch = CurrencyRepository.findByBatchNum(previousBatchNum);
+
+            SlackWebhook slack = new SlackWebhook();
+
+            for (Currency current : currencies) {
+                Optional<Currency> previous = previousBatch.stream().filter(c -> c.getSymbol().equals(current.getSymbol())).findFirst();
+                if (previous.isPresent()) {
+                    Integer deltaRank = previous.get().getRank() - current.getRank();
+
+                    if (deltaRank > Constants.RANK_CHANGE_THRESHOLD) {
+                        String message = String.format("%s (%s) moved up %d positions from %d to %d. " +
+                                "The price went from $%f to $%f.", current.getName(), current.getSymbol(), deltaRank,
+                                previous.get().getRank(), current.getRank(), previous.get().getPrice(), current.getPrice());
+
+                        slack.sendMessage(message);
+                    }
+                }
+            }
+
+            slack.shutdown();
+        }
 
         if (saveCurrencies)
             DbUtils.saveEntities(currencies);

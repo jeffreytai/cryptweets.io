@@ -1,4 +1,4 @@
-package com.crypto.hibernate;
+package com.crypto.orm;
 
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
@@ -12,7 +12,7 @@ public class HibernateUtils {
     private static SessionFactory buildSessionFactory() {
         try {
             Properties props = new Properties();
-            props.load(HibernateUtils.class.getClassLoader().getResourceAsStream("application.properties"));
+            props.load(HibernateUtils.class.getClassLoader().getResourceAsStream("hibernate.properties"));
 
             return new Configuration().mergeProperties(props).configure().buildSessionFactory();
         } catch (Throwable ex) {
