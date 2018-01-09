@@ -7,9 +7,8 @@ import com.crypto.utils.ApiUtils;
 import com.crypto.utils.DbUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.hibernate.Session;
-import org.hibernate.query.Query;
 
+import javax.persistence.Query;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -131,7 +130,7 @@ public class SolumeIO {
      * @return
      */
     public Integer findLastBatchNumber() {
-        javax.persistence.Query query = PersistenceManager.getEntityManager().createQuery("select MAX(c.batchNum) from CoinSentiment c");
+        Query query = PersistenceManager.getEntityManager().createQuery("select MAX(c.batchNum) from CoinSentiment c");
         Object maxBatchNum = query.getResultList().get(0);
 
         return maxBatchNum == null ? 0 : (Integer) maxBatchNum;

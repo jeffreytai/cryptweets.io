@@ -2,6 +2,7 @@ package com.crypto.prices;
 
 import com.crypto.entity.Currency;
 import com.crypto.builder.PersistenceManager;
+import com.crypto.repository.CurrencyRepository;
 import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
 
@@ -9,6 +10,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.Query;
 import java.io.IOException;
@@ -19,6 +21,8 @@ import java.util.List;
 
 public class CoinMarketCap {
 
+    @Autowired
+    private CurrencyRepository currencyRepository;
 
     private final int MINIMUM_COIN_RANK;
 
@@ -30,7 +34,7 @@ public class CoinMarketCap {
      * Grab all coins that has a minimum coin rank of 200 by market cap
      * @return
      */
-    public List<Currency> loadCurrencies() {
+    public List<Currency> loadCurrencies(Integer previousBatchNum) {
         List<Currency> rankedCurrencies = new ArrayList<>();
 
         try {
@@ -39,9 +43,6 @@ public class CoinMarketCap {
 
             // initializing currentDate on the outside so that all currencies in the same batch/snapshot will have identical dates
             Date currentDate = new Date();
-
-            // Grab the previous batch number
-            int previousBatchNum = findLastBatchNumber();
 
             if (currencies.size() > MINIMUM_COIN_RANK) {
                 for (int i=MINIMUM_COIN_RANK; i<currencies.size(); i++) {
@@ -98,10 +99,23 @@ public class CoinMarketCap {
     /**
      * Grab the list of coins and save them to the database
      */
-    public void saveSnapshot() {
-        List<Currency> currencies = loadCurrencies();
+    public void analyzeCurrencies(boolean saveCurrencies) {
+        // Find the previous batch num
+        int previousBatchNum = findLastBatchNumber();
 
-        DbUtils.saveEntities(currencies);
+        if (previousBatchNum > 0) {
+            List<Currency> previousBatch = currencyRepository.findByBatchNum(previousBatchNum);
+
+            System.out.println(previousBatch);
+            for (Currency c : previousBatch) {
+                System.out.println(c.getName());
+            }
+        }
+
+        List<Currency> currencies = loadCurrencies(previousBatchNum);
+
+        if (saveCurrencies)
+            DbUtils.saveEntities(currencies);
     }
 
     /**
