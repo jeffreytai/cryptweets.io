@@ -25,6 +25,8 @@ public class Application {
         // retrieves sentiment analysis of all coins and adds it to the database
 //        SolumeIO solume = new SolumeIO();
 //        solume.saveSentiments();
+
+        return;
     }
 
     /**
