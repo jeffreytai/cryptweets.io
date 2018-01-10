@@ -83,7 +83,7 @@
             <version>${spring-boot.version}</version>
         </dependency>
 
-        <!-- Slack -->
+        <!-- Slack: https://github.com/allbegray/slack-api/tree/master/src/test/java/allbegray/slack -->
         <dependency>
             <groupId>com.github.allbegray</groupId>
             <artifactId>slack-api</artifactId>

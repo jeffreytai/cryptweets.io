@@ -7,6 +7,7 @@ import com.crypto.slack.SlackWebhook;
 import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
 
+import javafx.util.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,10 +15,14 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class CoinMarketCap {
 
@@ -108,7 +113,15 @@ public class CoinMarketCap {
         if (previousBatchNum > 0) {
             List<Currency> previousBatch = CurrencyRepository.findByBatchNum(previousBatchNum);
 
-            SlackWebhook slack = new SlackWebhook();
+            Set<Pair<Currency, Currency>> orderedCurrentToPreviousPair = new TreeSet<>(new Comparator<Pair<Currency, Currency>>() {
+                @Override
+                public int compare(Pair<Currency, Currency> o1, Pair<Currency, Currency> o2) {
+                    BigDecimal o1growth = (o1.getKey().getPrice().subtract(o1.getValue().getPrice())).divide(o1.getValue().getPrice(), RoundingMode.HALF_UP);
+                    BigDecimal o2growth = (o2.getKey().getPrice().subtract(o2.getValue().getPrice())).divide(o2.getValue().getPrice(), RoundingMode.HALF_UP);
+
+                    return -1 * o1growth.compareTo(o2growth);
+                }
+            });
 
             for (Currency current : currencies) {
                 Optional<Currency> previous = previousBatch.stream().filter(c -> c.getSymbol().equals(current.getSymbol())).findFirst();
@@ -116,13 +129,31 @@ public class CoinMarketCap {
                     Integer deltaRank = previous.get().getRank() - current.getRank();
 
                     if (deltaRank > Constants.RANK_CHANGE_THRESHOLD) {
-                        String message = String.format("%s (%s) moved up %d positions from %d to %d. " +
-                                "The price went from $%f to $%f.", current.getName(), current.getSymbol(), deltaRank,
-                                previous.get().getRank(), current.getRank(), previous.get().getPrice(), current.getPrice());
-
-                        slack.sendMessage(message);
+                        try {
+                            orderedCurrentToPreviousPair.add(new Pair<>(current, previous.get()));
+                        } catch (ArithmeticException ex) {
+                            continue;
+                        }
                     }
                 }
+            }
+
+            SlackWebhook slack = new SlackWebhook();
+
+            for (Pair<Currency, Currency> pair : orderedCurrentToPreviousPair) {
+                Currency current = pair.getKey();
+                Currency previous = pair.getValue();
+
+                Integer deltaRank = previous.getRank() - current.getRank();
+                BigDecimal growth = (current.getPrice().subtract(previous.getPrice())).divide(previous.getPrice(), RoundingMode.HALF_UP);
+
+                String message = String.format("%s (%s) moved up %d positions from %d to %d. " +
+                    "The price went from $%s to $%s, a growth of %s%%.", current.getName(), current.getSymbol(),
+                        deltaRank, previous.getRank(), current.getRank(),
+                        previous.getPrice().setScale(2, RoundingMode.FLOOR).toString(), current.getPrice().setScale(2, RoundingMode.FLOOR).toString(),
+                        growth.multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.FLOOR).toString());
+
+                slack.sendMessage(message);
             }
 
             slack.shutdown();
