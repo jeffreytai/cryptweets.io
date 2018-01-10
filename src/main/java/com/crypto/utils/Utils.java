@@ -8,16 +8,35 @@ public class Utils {
     /**
      * Replace all non-numeric characters except for decimals in a string
      * @param value
-     * @return
+     * @return BigDecimal datatype
      */
-    public static BigDecimal sanitizeDecimalString(String value) {
+    public static BigDecimal sanitizeStringToBigDecimal(String value) {
         try {
             String sanitizedValue = value.replaceAll("[^\\d.]", "");
             return new BigDecimal(sanitizedValue);
         } catch (NumberFormatException ex) {
             return null;
         }
+    }
 
+    /**
+     * Replace all non-numeric characters except for decimals in a string
+     * @param value
+     * @return double datatype
+     */
+    public static Double sanitizeStringToDouble(String value) {
+        String sanitizedValue = value.replaceAll("[^\\d.]", "");
+        return Double.parseDouble(sanitizedValue);
+    }
+
+    /**
+     * Round a decimal to the nearest two decimal places
+     * @param value
+     * @return
+     */
+    public static Double roundDecimal(Double value) {
+        Double rounded = (double) Math.round(value * 100) / 100;
+        return rounded;
     }
 
     /**
