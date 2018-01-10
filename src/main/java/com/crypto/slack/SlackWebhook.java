@@ -17,13 +17,13 @@ public class SlackWebhook {
         this.username = username;
     }
 
-    public SlackWebhook() {
+    public SlackWebhook(String username) {
         try {
             Properties props = new Properties();
             props.load(SlackWebhook.class.getClassLoader().getResourceAsStream("slack.properties"));
 
             this.webhookClient = SlackClientFactory.createWebhookClient(props.getProperty("webhook-url"));
-            this.username = props.getProperty("username");
+            this.username = username;
         } catch (Throwable ex) {
             System.err.println("Error in retrieving Slack properties");
             ex.printStackTrace();

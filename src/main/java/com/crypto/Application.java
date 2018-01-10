@@ -1,5 +1,6 @@
 package com.crypto;
 
+import com.crypto.arbitrage.MarketComparer;
 import com.crypto.prices.CoinMarketCap;
 import com.crypto.sentiment.SolumeIO;
 import org.springframework.boot.CommandLineRunner;
@@ -19,12 +20,16 @@ public class Application {
 //        SpringApplication.run(Application.class, args);
 
         // takes the current snapshot of coin market cap and adds it to the database
-        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
-        coinMarketCap.analyzeCurrencies(false);
+//        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
+//        coinMarketCap.analyzeCurrencies(false);
 
         // retrieves sentiment analysis of all coins and adds it to the database
 //        SolumeIO solume = new SolumeIO();
 //        solume.saveSentiments();
+
+        // checks arbitrage opportunies between 2 exchanges
+        MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
+        marketComparer.checkArbitrageRates();
 
         return;
     }

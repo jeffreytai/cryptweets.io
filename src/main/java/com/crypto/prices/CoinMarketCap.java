@@ -27,6 +27,7 @@ import java.util.TreeSet;
 public class CoinMarketCap {
 
     private final int MINIMUM_COIN_RANK;
+    private final String SLACK_ALERT_USERNAME = "coin-movement-alert";
 
     public CoinMarketCap(int minimumCoinRank) {
         this.MINIMUM_COIN_RANK = minimumCoinRank;
@@ -66,10 +67,10 @@ public class CoinMarketCap {
                                 currencyName.text(),
                                 currencySymbol.text(),
                                 Integer.parseInt(currencyRank.text()),
-                                Utils.sanitizeDecimalString(marketCap.text()),
+                                Utils.sanitizeStringToBigDecimal(marketCap.text()),
                                 new BigDecimal(currencyPrice.attr("data-usd")),
-                                Utils.sanitizeDecimalString(circulatingSupply.text()),
-                                Utils.sanitizeDecimalString(volume_24h.text()),
+                                Utils.sanitizeStringToBigDecimal(circulatingSupply.text()),
+                                Utils.sanitizeStringToBigDecimal(volume_24h.text()),
                                 percentChange_1h != null && percentChange_1h.hasAttr("data-usd")
                                         ? new BigDecimal(percentChange_1h.attr("data-usd"))
                                         : null,
@@ -138,7 +139,7 @@ public class CoinMarketCap {
                 }
             }
 
-            SlackWebhook slack = new SlackWebhook();
+            SlackWebhook slack = new SlackWebhook(this.SLACK_ALERT_USERNAME);
 
             for (Pair<Currency, Currency> pair : orderedCurrentToPreviousPair) {
                 Currency current = pair.getKey();
