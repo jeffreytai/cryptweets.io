@@ -3,7 +3,8 @@ package com.crypto.arbitrage;
 import com.crypto.orm.entity.ActiveMarket;
 import com.crypto.slack.SlackWebhook;
 import com.crypto.utils.Utils;
-import javafx.util.Pair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,15 +14,20 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 public class MarketComparer {
 
     private final String SLACK_ALERT_USERNAME = "arbitrage-alert";
+    private final String COIN_MARKET_CAP_EXCHANGE_BASE_URL = "https://coinmarketcap.com/exchanges/";
+
+    private Integer ARBITRAGE_LIST_LIMIT = 5;
+
     private String baseExchange;
     private String arbitrageExchange;
 
@@ -37,52 +43,69 @@ public class MarketComparer {
     public void checkArbitrageRates() {
 
         try {
-            Document baseExchangeDoc = Jsoup.connect("https://coinmarketcap.com/exchanges/" + baseExchange).get();
+            Document baseExchangeDoc = Jsoup.connect(this.COIN_MARKET_CAP_EXCHANGE_BASE_URL + this.baseExchange).get();
             Elements baseExchangeMarkets = baseExchangeDoc.select("#markets tbody tr:not(:first-child)");
             List<ActiveMarket> baseActiveMarkets = extractActiveMarkets(baseExchange, baseExchangeMarkets);
 
-            Document arbitrageExchangeDoc = Jsoup.connect("https://coinmarketcap.com/exchanges/" + arbitrageExchange).get();
+            Document arbitrageExchangeDoc = Jsoup.connect(this.COIN_MARKET_CAP_EXCHANGE_BASE_URL + this.arbitrageExchange).get();
             Elements arbitrageExchangeMarkets = arbitrageExchangeDoc.select("#markets tbody tr:not(:first-child)");
             List<ActiveMarket> arbitrageActiveMarkets = extractActiveMarkets(arbitrageExchange, arbitrageExchangeMarkets);
 
             SlackWebhook slack = new SlackWebhook(this.SLACK_ALERT_USERNAME);
 
-            Set<Pair<ActiveMarket, ActiveMarket>> orderedBaseToArbitragePair = new TreeSet<>(new Comparator<Pair<ActiveMarket, ActiveMarket>>() {
+            // Order the base-arbitrage pairs as they are added and maintain a list of added pairs so there are no duplicates
+            Set<Triple<ActiveMarket, Double, ActiveMarket>> orderedBaseToArbitrageTuple = new TreeSet<>(new Comparator<Triple<ActiveMarket, Double, ActiveMarket>>() {
                 @Override
-                public int compare(Pair<ActiveMarket, ActiveMarket> o1, Pair<ActiveMarket, ActiveMarket> o2) {
-                    Double firstProfitPercent = o1.getValue().getPrice() - o1.getKey().getPrice();
-                    Double secondProfitPercent = o2.getValue().getPrice() - o2.getKey().getPrice();
-
-                    return firstProfitPercent.compareTo(secondProfitPercent);
+                public int compare(Triple<ActiveMarket, Double, ActiveMarket> o1, Triple<ActiveMarket, Double, ActiveMarket> o2) {
+                    return -1 * o1.getMiddle().compareTo(o2.getMiddle());
                 }
             });
 
+            Map<String, Double> addedPairs = new HashMap<>();
+
+            // Loop through each option and add it to the ordered set. If the base currency already exists
+            // show the pairing with the higher arbitrage rate
             for (ActiveMarket baseMarket : baseActiveMarkets) {
                 Optional<ActiveMarket> potentialMarket = arbitrageActiveMarkets.stream().filter(m -> m.getCurrencyName().equals(baseMarket.getCurrencyName())).findFirst();
 
                 if (potentialMarket.isPresent()) {
                     Double basePrice = baseMarket.getPrice();
                     Double arbitragePrice = potentialMarket.get().getPrice();
+                    Double arbitrageRate = (arbitragePrice - basePrice) / basePrice;
 
                     if (arbitragePrice > basePrice) {
-                        orderedBaseToArbitragePair.add(new Pair<ActiveMarket, ActiveMarket>(baseMarket, potentialMarket.get()));
+                        if (!addedPairs.containsKey(baseMarket.getCurrencyName())) {
+                            orderedBaseToArbitrageTuple.add(new ImmutableTriple<>(baseMarket, arbitrageRate, potentialMarket.get()));
+                            addedPairs.put(baseMarket.getCurrencyName(), basePrice);
+                        }
+                        else {
+                            Boolean removed = orderedBaseToArbitrageTuple.removeIf(p -> p.getLeft().equals(baseMarket) && p.getMiddle() < arbitrageRate);
+                            if (removed) {
+                                orderedBaseToArbitrageTuple.add(new ImmutableTriple<>(baseMarket, arbitrageRate, potentialMarket.get()));
+                                addedPairs.put(baseMarket.getCurrencyName(), basePrice);
+                            }
+                        }
                     }
                 }
             }
 
-            if (orderedBaseToArbitragePair.size() > 0) {
-                Set<Pair<ActiveMarket, ActiveMarket>> limitedBaseToArbitragePair = orderedBaseToArbitragePair.stream().limit(3).collect(Collectors.toSet());
+            // Send information messages
+            if (orderedBaseToArbitrageTuple.size() > 0) {
+                int iteration = 0;
 
-                for (Pair<ActiveMarket, ActiveMarket> orderedBaseToArbitrageEntry : limitedBaseToArbitragePair) {
-                    ActiveMarket base = orderedBaseToArbitrageEntry.getKey();
-                    ActiveMarket arb = orderedBaseToArbitrageEntry.getValue();
-                    Double arbitragePercent = (arb.getPrice() - base.getPrice()) / base.getPrice();
+                for (Triple<ActiveMarket, Double, ActiveMarket> orderedBaseToArbitrageEntry : orderedBaseToArbitrageTuple) {
+                    ActiveMarket base = orderedBaseToArbitrageEntry.getLeft();
+                    ActiveMarket arb = orderedBaseToArbitrageEntry.getRight();
+                    Double arbitragePercent = orderedBaseToArbitrageEntry.getMiddle();
 
-                    String message = String.format("%s (trading pair %s) - %s price: $%s / %s price: $%s. Arbitrage rate: %s%%",
+                    String message = String.format("%s (trading pair *%s*) - %s price: $%s / %s price: $%s. Arbitrage rate: %s%%",
                             base.getCurrencyName(), base.getPair(), base.getExchangeName(), base.getPrice().toString(),
                             arb.getExchangeName(), arb.getPrice().toString(), Utils.roundDecimal(arbitragePercent * 100).toString());
 
                     slack.sendMessage(message);
+
+                    if (++iteration > this.ARBITRAGE_LIST_LIMIT)
+                        break;
                 }
             }
 

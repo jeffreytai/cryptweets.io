@@ -10,5 +10,10 @@ public class Constants {
     /**
      * Threshold for Market Cap rank change
      */
-    public static final Integer RANK_CHANGE_THRESHOLD = 20;
+    public static final Integer RANK_CHANGE_THRESHOLD = 5;
+
+    /**
+     * Threshold for Solume.io social volume change
+     */
+    public static final Integer SOCIAL_VOLUME_CHANGE_THRESHOLD = 100;
 }
