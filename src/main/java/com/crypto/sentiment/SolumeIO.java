@@ -1,7 +1,9 @@
 package com.crypto.sentiment;
 
+import com.crypto.Constants;
 import com.crypto.orm.entity.CoinSentiment;
 import com.crypto.exception.NoResultsFoundException;
+import com.crypto.slack.SlackWebhook;
 import com.crypto.utils.ApiUtils;
 import com.crypto.utils.DbUtils;
 import com.google.gson.JsonElement;
@@ -10,11 +12,14 @@ import com.google.gson.JsonObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class SolumeIO {
 
@@ -38,6 +43,16 @@ public class SolumeIO {
      */
     private String token;
 
+    /**
+     * Base url for website
+     */
+    private final String WEBSITE_URL = "https://solume.io/";
+
+    /**
+     * Slack username to post as
+     */
+    private final String SLACK_ALERT_USERNAME = "social-volume-alert";
+
 
     public SolumeIO() {
         Properties prop = new Properties();
@@ -58,40 +73,51 @@ public class SolumeIO {
      * Pull sentiment analysis for all coins listed on Solume.io
      * @return
      */
-    public List<CoinSentiment> loadAllSentimentAnalysis() {
-        JsonObject sentimentEntries = ApiUtils.getJson(this.BASE_URL, "auth", this.token);
+    public List<CoinSentiment> loadAllSentimentAnalysis(Integer previousBatchNum) {
+        List<CoinSentiment> entries = loadSentimentFromApi(previousBatchNum);
 
-        List<CoinSentiment> entries = extractEntitiesFromJson(sentimentEntries);
         return entries;
     }
 
     /**
-     * Pull sentiment analysis for specified coin listed on Solume.io
+     * Pull sentiment analysis for a specific coin listed on Solume.io
      * @param symbol
      * @return
      */
-    public CoinSentiment loadSentimentAnalysis(String symbol) throws NoResultsFoundException {
+    public CoinSentiment loadSentimentAnalysis(String symbol, Integer previousBatchNum) throws NoResultsFoundException {
         JsonObject sentimentEntry = ApiUtils.getJson(this.BASE_URL, "auth", this.token, "symbol", symbol);
 
         if (sentimentEntry.keySet().size() == 0) {
             throw new NoResultsFoundException("No sentiment analysis found for " + symbol);
         }
 
-        List<CoinSentiment> entries = extractEntitiesFromJson(sentimentEntry);
+        List<CoinSentiment> entries = extractEntitiesFromJson(sentimentEntry, previousBatchNum);
         return entries.get(0);
     }
 
     /**
-     * Aggregates coins from JsonObject that is returned from API call
+     * Creates the list of CoinSentiments from the API
+     * @param previousBatchNum
+     * @return
+     */
+    private List<CoinSentiment> loadSentimentFromApi(Integer previousBatchNum) {
+        JsonObject sentimentEntries = ApiUtils.getJson(this.BASE_URL, "auth", this.token);
+        List<CoinSentiment> entries = extractEntitiesFromJson(sentimentEntries, previousBatchNum);
+
+        return entries;
+    }
+
+
+    /**
+     * Aggregates coins from JsonObject that is returned from API call.
+     * The API doesn't provide price change or sentiment change data.
      * @param json
      * @return
      */
-    private List<CoinSentiment> extractEntitiesFromJson(JsonObject json) {
+    private List<CoinSentiment> extractEntitiesFromJson(JsonObject json, Integer previousBatchNum) {
         List<CoinSentiment> coinSentiments = new ArrayList<>();
 
         Date currentDate = new Date();
-
-        Integer previousBatchNum = findLastBatchNumber();
 
         for (Map.Entry<String, JsonElement> entry : json.entrySet()) {
             JsonObject info = entry.getValue().getAsJsonObject();
@@ -115,12 +141,34 @@ public class SolumeIO {
     }
 
     /**
-     * Grab all sentiment analyses and save them to the database
+     * Grab all sentiment analysis of coins and send Slack message for coins that meet a specific threshold
+     * @param saveSentiments
      */
-    public void saveSentiments() {
-        List<CoinSentiment> sentiments = loadAllSentimentAnalysis();
+    public void analyzeSentiments(boolean saveSentiments) {
+        // Find the previous batch number
+        int previousBatchNum = findLastBatchNumber();
 
-        DbUtils.saveEntities(sentiments);
+        List<CoinSentiment> sentiments = loadAllSentimentAnalysis(previousBatchNum);
+        sentiments = sentiments.stream()
+                            .filter(s -> s.getSocialVolumeChange_24h().compareTo(new BigDecimal(Constants.SOCIAL_VOLUME_CHANGE_THRESHOLD)) > 0)
+                            .sorted(Comparator.comparing((CoinSentiment c) -> c.getSocialVolumeChange_24h()).reversed())
+                            .collect(Collectors.toList());
+
+        if (sentiments.size() > 0) {
+            SlackWebhook slack = new SlackWebhook(this.SLACK_ALERT_USERNAME);
+
+            for (CoinSentiment sentiment : sentiments) {
+                String message = String.format("*%s* has an increase of %s%% in social volume.",
+                        sentiment.getSymbol(), sentiment.getSocialVolumeChange_24h().setScale(2, RoundingMode.FLOOR).toString());
+
+                slack.sendMessage(message);
+            }
+
+            slack.shutdown();
+        }
+
+        if (saveSentiments)
+            DbUtils.saveEntities(sentiments);
     }
 
     /**

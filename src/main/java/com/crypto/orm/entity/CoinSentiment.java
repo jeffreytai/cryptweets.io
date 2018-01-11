@@ -178,4 +178,5 @@ public class CoinSentiment {
     public void setBatchNum(Integer batchNum) {
         this.batchNum = batchNum;
     }
+
 }

@@ -26,8 +26,21 @@ import java.util.TreeSet;
 
 public class CoinMarketCap {
 
+    /**
+     * Minimum rank for the coin to be displayed
+     */
     private final int MINIMUM_COIN_RANK;
+
+    /**
+     * Slack username to post as
+     */
     private final String SLACK_ALERT_USERNAME = "coin-movement-alert";
+
+    /**
+     * Base URL for website
+     */
+    private final String BASE_URL = "https://coinmarketcap.com/all/views/all/";
+
 
     public CoinMarketCap(int minimumCoinRank) {
         this.MINIMUM_COIN_RANK = minimumCoinRank;
@@ -41,7 +54,7 @@ public class CoinMarketCap {
         List<Currency> rankedCurrencies = new ArrayList<>();
 
         try {
-            Document doc = Jsoup.connect("https://coinmarketcap.com/all/views/all/").get();
+            Document doc = Jsoup.connect(this.BASE_URL).get();
             Elements currencies = doc.select("#currencies-all tbody tr");
 
             // initializing currentDate on the outside so that all currencies in the same batch/snapshot will have identical dates
@@ -106,7 +119,7 @@ public class CoinMarketCap {
      * @param saveCurrencies
      */
     public void analyzeCurrencies(boolean saveCurrencies) {
-        // Find the previous batch num
+        // Find the previous batch number
         int previousBatchNum = findLastBatchNumber();
 
         List<Currency> currencies = loadCurrencies(previousBatchNum);

@@ -18,3 +18,6 @@ create table CoinSentiment (
 
 create index ix_CoinSentiment_Symbol on CoinSentiment (Symbol);
 create index ix_CoinSentiment_BatchNum on CoinSentiment (BatchNum);
+
+alter table CoinSentiment add column PriceChange_24h decimal(10,2);
+alter table CoinSentiment add column SentimentChange_24h long;

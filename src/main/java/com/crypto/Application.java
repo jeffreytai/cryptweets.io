@@ -20,15 +20,15 @@ public class Application {
 //        SpringApplication.run(Application.class, args);
 
         // takes the current snapshot of coin market cap and adds it to the database
-//        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
+        CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
 //        coinMarketCap.analyzeCurrencies(false);
 
         // retrieves sentiment analysis of all coins and adds it to the database
         SolumeIO solume = new SolumeIO();
-        solume.saveSentiments();
+        solume.analyzeSentiments(false);
 
         // checks arbitrage opportunies between 2 exchanges
-//        MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
+        MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
 //        marketComparer.checkArbitrageRates();
 
         return;
