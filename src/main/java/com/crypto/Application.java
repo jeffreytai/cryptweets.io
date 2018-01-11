@@ -24,12 +24,12 @@ public class Application {
 //        coinMarketCap.analyzeCurrencies(false);
 
         // retrieves sentiment analysis of all coins and adds it to the database
-//        SolumeIO solume = new SolumeIO();
-//        solume.saveSentiments();
+        SolumeIO solume = new SolumeIO();
+        solume.saveSentiments();
 
         // checks arbitrage opportunies between 2 exchanges
-        MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
-        marketComparer.checkArbitrageRates();
+//        MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
+//        marketComparer.checkArbitrageRates();
 
         return;
     }

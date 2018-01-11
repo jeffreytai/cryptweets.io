@@ -110,4 +110,10 @@ public class ActiveMarket {
     public void setUpdated(String updated) {
         this.updated = updated;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        ActiveMarket am = (ActiveMarket) o;
+        return this.getCurrencyName().equals(am.getCurrencyName());
+    }
 }

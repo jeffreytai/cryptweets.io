@@ -148,7 +148,7 @@ public class CoinMarketCap {
                 Integer deltaRank = previous.getRank() - current.getRank();
                 BigDecimal growth = (current.getPrice().subtract(previous.getPrice())).divide(previous.getPrice(), RoundingMode.HALF_UP);
 
-                String message = String.format("%s (%s) moved up %d positions from %d to %d. " +
+                String message = String.format("%s (*%s*) moved up %d positions from %d to %d. " +
                     "The price went from $%s to $%s, a growth of %s%%.", current.getName(), current.getSymbol(),
                         deltaRank, previous.getRank(), current.getRank(),
                         previous.getPrice().setScale(2, RoundingMode.FLOOR).toString(), current.getPrice().setScale(2, RoundingMode.FLOOR).toString(),
