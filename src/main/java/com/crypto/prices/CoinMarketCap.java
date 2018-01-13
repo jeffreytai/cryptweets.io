@@ -76,6 +76,8 @@ public class CoinMarketCap {
                         Element percentChange_24h = row.getElementsByClass("percent-24h").first();
                         Element percentChange_7d = row.getElementsByClass("percent-7d").first();
 
+                        System.out.println(currencyName.text());
+
                         Currency currency = new Currency(
                                 currencyName.text(),
                                 currencySymbol.text(),
@@ -99,7 +101,7 @@ public class CoinMarketCap {
 
                         rankedCurrencies.add(currency);
 
-                    } catch (NullPointerException npe) {
+                    } catch (NullPointerException | NumberFormatException npe) {
                         continue;
                     }
                 }
