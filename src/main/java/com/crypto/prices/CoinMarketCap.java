@@ -7,7 +7,8 @@ import com.crypto.slack.SlackWebhook;
 import com.crypto.utils.DbUtils;
 import com.crypto.utils.Utils;
 
-import javafx.util.Pair;
+//import javafx.util.Pair;
+import org.javatuples.Pair;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -132,8 +133,8 @@ public class CoinMarketCap {
             Set<Pair<Currency, Currency>> orderedCurrentToPreviousPair = new TreeSet<>(new Comparator<Pair<Currency, Currency>>() {
                 @Override
                 public int compare(Pair<Currency, Currency> o1, Pair<Currency, Currency> o2) {
-                    BigDecimal o1growth = (o1.getKey().getPrice().subtract(o1.getValue().getPrice())).divide(o1.getValue().getPrice(), RoundingMode.HALF_UP);
-                    BigDecimal o2growth = (o2.getKey().getPrice().subtract(o2.getValue().getPrice())).divide(o2.getValue().getPrice(), RoundingMode.HALF_UP);
+                    BigDecimal o1growth = (o1.getValue0().getPrice().subtract(o1.getValue1().getPrice())).divide(o1.getValue1().getPrice(), RoundingMode.HALF_UP);
+                    BigDecimal o2growth = (o2.getValue0().getPrice().subtract(o2.getValue1().getPrice())).divide(o2.getValue1().getPrice(), RoundingMode.HALF_UP);
 
                     return -1 * o1growth.compareTo(o2growth);
                 }
@@ -157,8 +158,8 @@ public class CoinMarketCap {
             SlackWebhook slack = new SlackWebhook(this.SLACK_ALERT_USERNAME);
 
             for (Pair<Currency, Currency> pair : orderedCurrentToPreviousPair) {
-                Currency current = pair.getKey();
-                Currency previous = pair.getValue();
+                Currency current = pair.getValue0();
+                Currency previous = pair.getValue1();
 
                 Integer deltaRank = previous.getRank() - current.getRank();
                 BigDecimal growth = (current.getPrice().subtract(previous.getPrice())).divide(previous.getPrice(), RoundingMode.HALF_UP);

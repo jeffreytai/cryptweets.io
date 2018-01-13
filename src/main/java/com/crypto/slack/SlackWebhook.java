@@ -3,6 +3,7 @@ package com.crypto.slack;
 import allbegray.slack.SlackClientFactory;
 import allbegray.slack.type.Payload;
 import allbegray.slack.webhook.SlackWebhookClient;
+import org.springframework.core.io.ResourceLoader;
 
 import java.util.Properties;
 
@@ -20,7 +21,7 @@ public class SlackWebhook {
     public SlackWebhook(String username) {
         try {
             Properties props = new Properties();
-            props.load(SlackWebhook.class.getClassLoader().getResourceAsStream("slack.properties"));
+            props.load(ResourceLoader.class.getClassLoader().getResourceAsStream("slack.properties"));
 
             this.webhookClient = SlackClientFactory.createWebhookClient(props.getProperty("webhook-url"));
             this.username = username;
