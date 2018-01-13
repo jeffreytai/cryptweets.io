@@ -8,6 +8,7 @@ import com.crypto.utils.ApiUtils;
 import com.crypto.utils.DbUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.springframework.core.io.ResourceLoader;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,7 +59,7 @@ public class SolumeIO {
         Properties prop = new Properties();
 
         try {
-            InputStream inputStream = SolumeIO.class.getClassLoader().getResourceAsStream(this.PROPERTIES_FILE);
+            InputStream inputStream = ResourceLoader.class.getClassLoader().getResourceAsStream(this.PROPERTIES_FILE);
             prop.load(inputStream);
             inputStream.close();
 
