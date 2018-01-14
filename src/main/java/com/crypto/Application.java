@@ -4,7 +4,7 @@ import com.crypto.arbitrage.MarketComparer;
 import com.crypto.orm.HibernateUtils;
 import com.crypto.prices.CoinMarketCap;
 import com.crypto.sentiment.SolumeIO;
-import org.hibernate.cfg.Environment;
+import com.google.common.base.Strings;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -12,7 +12,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 
 import java.util.Arrays;
-import java.util.Properties;
 
 @SpringBootApplication
 public class Application {
@@ -20,8 +19,18 @@ public class Application {
     // TODO: Import connection pooling (hibernate-c3p0)
     // TODO: Write unit tests
     public static void main(String args[]) {
-        String saveSnapshot = System.getenv("saveSnapshot");
-        String saveSentiment = System.getenv("saveSentiment");
+//        Used when running locally
+//        String saveSnapshot = System.getenv("saveSnapshot");
+//        String saveSentiment = System.getenv("saveSentiment");
+
+        // Used for executable jar
+        String saveSnapshot = System.getProperty("saveSnapshot");
+        String saveSentiment = System.getProperty("saveSentiment");
+
+        if (Strings.isNullOrEmpty(saveSnapshot) || Strings.isNullOrEmpty(saveSentiment)) {
+            System.out.println("saveSnapshot and saveSentiment properties not provided");
+            System.exit(1);
+        }
 
 //        SpringApplication.run(Application.class, args);
 
