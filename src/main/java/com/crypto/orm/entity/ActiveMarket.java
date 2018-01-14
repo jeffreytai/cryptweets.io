@@ -116,4 +116,14 @@ public class ActiveMarket {
         ActiveMarket am = (ActiveMarket) o;
         return this.getCurrencyName().equals(am.getCurrencyName());
     }
+
+    @Override
+    public int hashCode() {
+        return exchangeName.hashCode() ^
+                currencyName.hashCode() ^
+                pair.hashCode() ^
+                volume_24h.hashCode() ^
+                price.hashCode() ^
+                volumePercentage.hashCode();
+    }
 }

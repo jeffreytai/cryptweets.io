@@ -222,4 +222,26 @@ public class Currency {
     public void setBatchNum(Integer batchNum) {
         this.batchNum = batchNum;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        Currency c = (Currency) o;
+        return this.getCurrencyId() == c.getCurrencyId();
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode() ^
+                symbol.hashCode() ^
+                rank.hashCode() ^
+                marketCap.hashCode() ^
+                price.hashCode() ^
+                circulatingSupply.hashCode() ^
+                volume_24h.hashCode() ^
+                percentChange_1h.hashCode() ^
+                percentChange_7d.hashCode() ^
+                percentChange_24h.hashCode() ^
+                timestamp.hashCode() ^
+                batchNum.hashCode();
+    }
 }

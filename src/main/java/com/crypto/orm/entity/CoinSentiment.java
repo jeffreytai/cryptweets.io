@@ -179,4 +179,23 @@ public class CoinSentiment {
         this.batchNum = batchNum;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        CoinSentiment cs = (CoinSentiment) o;
+        return this.getId() == cs.getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return symbol.hashCode() ^
+                twitterChange_24h.hashCode() ^
+                twitterVolume_24h.hashCode() ^
+                redditChange_24h.hashCode() ^
+                redditVolume_24h.hashCode() ^
+                socialVolumeChange_24h.hashCode() ^
+                socialVolume_24h.hashCode() ^
+                timestamp.hashCode() ^
+                batchNum.hashCode();
+    }
+
 }
