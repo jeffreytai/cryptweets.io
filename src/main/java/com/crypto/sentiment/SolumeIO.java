@@ -162,15 +162,16 @@ public class SolumeIO {
         int previousBatchNum = findLastBatchNumber();
 
         List<CoinSentiment> sentiments = loadAllSentimentAnalysis(previousBatchNum);
-        sentiments = sentiments.stream()
-                            .filter(s -> s.getSocialVolumeChange_24h().compareTo(new BigDecimal(Constants.SOCIAL_VOLUME_CHANGE_THRESHOLD)) > 0)
-                            .sorted(Comparator.comparing((CoinSentiment c) -> c.getSocialVolumeChange_24h()).reversed())
-                            .collect(Collectors.toList());
 
-        if (sentiments.size() > 0) {
+        List<CoinSentiment> filteredSentiments = sentiments.stream()
+                .filter(s -> s.getSocialVolumeChange_24h().compareTo(new BigDecimal(Constants.SOCIAL_VOLUME_CHANGE_THRESHOLD)) > 0)
+                .sorted(Comparator.comparing((CoinSentiment c) -> c.getSocialVolumeChange_24h()).reversed())
+                .collect(Collectors.toList());
+
+        if (filteredSentiments.size() > 0) {
             SlackWebhook slack = new SlackWebhook(this.SLACK_ALERT_USERNAME);
 
-            for (CoinSentiment sentiment : sentiments) {
+            for (CoinSentiment sentiment : filteredSentiments) {
                 String message = String.format("*%s* has an increase of %s%% in social volume.",
                         sentiment.getSymbol(), sentiment.getSocialVolumeChange_24h().setScale(2, RoundingMode.FLOOR).toString());
 
