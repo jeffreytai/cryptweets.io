@@ -3,6 +3,7 @@ package com.crypto.sentiment;
 import com.crypto.Constants;
 import com.crypto.orm.entity.CoinSentiment;
 import com.crypto.exception.NoResultsFoundException;
+import com.crypto.orm.repository.SentimentRepository;
 import com.crypto.slack.SlackWebhook;
 import com.crypto.utils.ApiUtils;
 import com.crypto.utils.DbUtils;
@@ -154,16 +155,27 @@ public class SolumeIO {
     }
 
     /**
-     * Grab all sentiment analysis of coins and send Slack message for coins that meet a specific threshold
-     * @param saveSentiments
+     * Save current snapshot of sentiments
      */
-    public void analyzeSentiments(boolean saveSentiments) {
+    public void saveSentiment() {
         // Find the previous batch number
-        int previousBatchNum = findLastBatchNumber();
+        int previousBatchNum = SentimentRepository.findLastBatchNumber();
 
         List<CoinSentiment> sentiments = loadAllSentimentAnalysis(previousBatchNum);
 
-        List<CoinSentiment> filteredSentiments = sentiments.stream()
+        DbUtils.saveEntities(sentiments);
+    }
+
+    /**
+     * Grab all sentiment analysis of coins and send Slack message for coins that meet a specific threshold
+     */
+    public void analyzeSentiments() {
+        // Find the current batch number
+        int currentBatchNum = SentimentRepository.findLastBatchNumber();
+
+        List<CoinSentiment> currentBatch = SentimentRepository.findByBatchNum(currentBatchNum);
+
+        List<CoinSentiment> filteredSentiments = currentBatch.stream()
                 .filter(s -> s.getSocialVolumeChange_24h().compareTo(new BigDecimal(Constants.SOCIAL_VOLUME_CHANGE_THRESHOLD)) > 0)
                 .sorted(Comparator.comparing((CoinSentiment c) -> c.getSocialVolumeChange_24h()).reversed())
                 .collect(Collectors.toList());
@@ -180,18 +192,7 @@ public class SolumeIO {
 
             slack.shutdown();
         }
-
-        if (saveSentiments)
-            DbUtils.saveEntities(sentiments);
     }
 
-    /**
-     * Returns the max batch number from the CoinSentiment table
-     * @return
-     */
-    public Integer findLastBatchNumber() {
-        Object maxBatchNum = DbUtils.runSingularResultQuery("select MAX(c.batchNum) from CoinSentiment c");
 
-        return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
-    }
 }

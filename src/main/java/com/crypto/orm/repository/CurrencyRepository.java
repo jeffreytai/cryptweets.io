@@ -9,6 +9,11 @@ import java.util.Map;
 
 public class CurrencyRepository {
 
+    /**
+     * Retrieves all currencies in the specified batch
+     * @param batchNum
+     * @return
+     */
     public static List<Currency> findByBatchNum(Integer batchNum) {
         String query = "SELECT c FROM Currency c WHERE c.batchNum = :batchNum";
         Map<Object, Object> bindedParameters = new HashMap<>();
@@ -16,5 +21,15 @@ public class CurrencyRepository {
 
         List<Currency> result = (List<Currency>) DbUtils.runMultipleResultQuery(query, bindedParameters);
         return result;
+    }
+
+    /**
+     * Returns the max batch number from the Currency table
+     * @return
+     */
+    public static Integer findLastBatchNumber() {
+        Object maxBatchNum = DbUtils.runSingularResultQuery("select MAX(c.batchNum) from Currency c");
+
+        return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
     }
 }

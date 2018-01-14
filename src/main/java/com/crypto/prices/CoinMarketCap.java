@@ -116,19 +116,28 @@ public class CoinMarketCap {
     }
 
     /**
-     * Grab the current list of coins from coin market cap.
-     * If there was a previous batch of coins, check to see the movement in market cap
-     * If the change in movement meets the threshold, notify the slack channel
-     * @param saveCurrencies
+     * Retrieve and save the current list of coins from coin market cap.
      */
-    public void analyzeCurrencies(boolean saveCurrencies) {
+    public void saveCurrencySnapshot() {
         // Find the previous batch number
-        int previousBatchNum = findLastBatchNumber();
+        int previousBatchNum = CurrencyRepository.findLastBatchNumber();
 
         List<Currency> currencies = loadCurrencies(previousBatchNum);
 
-        if (previousBatchNum > 0) {
-            List<Currency> previousBatch = CurrencyRepository.findByBatchNum(previousBatchNum);
+        DbUtils.saveEntities(currencies);
+    }
+
+    /**
+     * Retrieve the last two batches and check to see the movement in market cap
+     * If the change in movement meets the threshold, notify the slack channel
+     */
+    public void analyzeCurrencies() {
+        // Find the current batch number
+        int currentBatchNum = CurrencyRepository.findLastBatchNumber();
+
+        if (currentBatchNum > 1) {
+            List<Currency> currentBatch = CurrencyRepository.findByBatchNum(currentBatchNum);
+            List<Currency> previousBatch = CurrencyRepository.findByBatchNum(currentBatchNum - 1);
 
             Set<Pair<Currency, Currency>> orderedCurrentToPreviousPair = new TreeSet<>(new Comparator<Pair<Currency, Currency>>() {
                 @Override
@@ -140,7 +149,7 @@ public class CoinMarketCap {
                 }
             });
 
-            for (Currency current : currencies) {
+            for (Currency current : currentBatch) {
                 Optional<Currency> previous = previousBatch.stream().filter(c -> c.getSymbol().equals(current.getSymbol())).findFirst();
                 if (previous.isPresent()) {
                     Integer deltaRank = previous.get().getRank() - current.getRank();
@@ -175,19 +184,5 @@ public class CoinMarketCap {
 
             slack.shutdown();
         }
-
-        if (saveCurrencies)
-            DbUtils.saveEntities(currencies);
-    }
-
-    /**
-     * Returns the max batch number from the Currency table
-     * @return
-     */
-    // TODO: Move this to a DbUtils function
-    private Integer findLastBatchNumber() {
-        Object maxBatchNum = DbUtils.runSingularResultQuery("select MAX(c.batchNum) from Currency c");
-
-        return maxBatchNum == null ? 0 : (Integer) maxBatchNum;
     }
 }
