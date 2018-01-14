@@ -125,12 +125,24 @@ public class SolumeIO {
 
             CoinSentiment sentiment = new CoinSentiment(
                     entry.getKey(),
-                    new BigDecimal(info.get("twitter_change_24h").toString()),
-                    Long.parseLong(info.get("twitter_volume_24h").toString()),
-                    new BigDecimal(info.get("reddit_change_24h").toString()),
-                    Long.parseLong(info.get("reddit_volume_24h").toString()),
-                    new BigDecimal(info.get("change_24h").toString()),
-                    Long.parseLong(info.get("volume_24h").toString()),
+                    info.has("twitter_change_24h")
+                        ? new BigDecimal(info.get("twitter_change_24h").toString())
+                        : null,
+                    info.has("twitter_volume_24h")
+                        ? Long.parseLong(info.get("twitter_volume_24h").toString())
+                        : null,
+                    info.has("reddit_change_24h")
+                        ? new BigDecimal(info.get("reddit_change_24h").toString())
+                        : null,
+                    info.has("reddit_volume_24h")
+                        ? Long.parseLong(info.get("reddit_volume_24h").toString())
+                        : null,
+                    info.has("change_24h")
+                        ? new BigDecimal(info.get("change_24h").toString())
+                        : null,
+                    info.has("volume_24h")
+                        ? Long.parseLong(info.get("volume_24h").toString())
+                        : null,
                     currentDate,
                     previousBatchNum + 1
             );

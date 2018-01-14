@@ -21,11 +21,11 @@ public class Application {
 
         // takes the current snapshot of coin market cap and adds it to the database
         CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
-        coinMarketCap.analyzeCurrencies(false);
+//        coinMarketCap.analyzeCurrencies(true);
 
         // retrieves sentiment analysis of all coins and adds it to the database
         SolumeIO solume = new SolumeIO();
-        solume.analyzeSentiments(false);
+        solume.analyzeSentiments(true);
 
         // checks arbitrage opportunies between 2 exchanges
         MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
