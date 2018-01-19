@@ -145,7 +145,13 @@ public class SolumeIO {
                         ? Long.parseLong(info.get("volume_24h").toString())
                         : null,
                     currentDate,
-                    previousBatchNum + 1
+                    previousBatchNum + 1,
+                    info.has("sentiment_24h")
+                        ? Double.parseDouble(info.get("sentiment_24h").toString())
+                        : null,
+                    info.has("sentiment_change_24h")
+                        ? Double.parseDouble(info.get("sentiment_change_24h").toString())
+                        : null
             );
 
             coinSentiments.add(sentiment);
@@ -184,8 +190,11 @@ public class SolumeIO {
             SlackWebhook slack = new SlackWebhook(this.SLACK_ALERT_USERNAME);
 
             for (CoinSentiment sentiment : filteredSentiments) {
-                String message = String.format("*%s* has an increase of %s%% in social volume.",
-                        sentiment.getSymbol(), sentiment.getSocialVolumeChange_24h().setScale(2, RoundingMode.FLOOR).toString());
+                String message = String.format("*%s* has an increase of %s%% in social volume and %s of %s%% in sentiment",
+                        sentiment.getSymbol(),
+                        sentiment.getSocialVolumeChange_24h().setScale(2, RoundingMode.FLOOR).toString(),
+                        sentiment.getSentimentChange_24h() >= 0 ? "an increase" : "a decrease",
+                        sentiment.getSentimentChange_24h().toString());
 
                 slack.sendMessage(message);
             }
