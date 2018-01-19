@@ -19,6 +19,8 @@ public class Application {
     // TODO: Import connection pooling (hibernate-c3p0)
     // TODO: Write unit tests
     public static void main(String args[]) {
+        //        SpringApplication.run(Application.class, args);
+
 //        Used when running locally
 //        String saveSnapshot = System.getenv("saveSnapshot");
 //        String saveSentiment = System.getenv("saveSentiment");
@@ -31,8 +33,6 @@ public class Application {
             System.out.println("saveSnapshot and saveSentiment properties not provided");
             System.exit(1);
         }
-
-//        SpringApplication.run(Application.class, args);
 
         // takes the current snapshot of coin market cap and adds it to the database
         CoinMarketCap coinMarketCap = new CoinMarketCap(Constants.MINIMUM_COIN_RANK);
@@ -52,7 +52,7 @@ public class Application {
 
 
         // checks arbitrage opportunies between 2 exchanges
-        MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
+//        MarketComparer marketComparer = new MarketComparer("binance", "bithumb");
 //        marketComparer.checkArbitrageRates();
 
         // Close database connections

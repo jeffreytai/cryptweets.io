@@ -73,6 +73,18 @@ public class CoinSentiment {
     private Date timestamp;
 
     /**
+     * Sentiment in the past 24h
+     */
+    @Column(name = "Sentiment_24h")
+    private Double sentiment_24h;
+
+    /**
+     * Sentiment Change in the past 24h
+     */
+    @Column(name = "SentimentChange_24h")
+    private Double sentimentChange_24h;
+
+    /**
      * Batch/snapshot number
      */
     @Column(name = "BatchNum", nullable = false)
@@ -83,7 +95,8 @@ public class CoinSentiment {
     public CoinSentiment(String symbol, BigDecimal twitterChange_24h, Long twitterVolume_24h,
                          BigDecimal redditChange_24h, Long redditVolume_24h,
                          BigDecimal socialVolumeChange_24h, Long socialVolume_24h,
-                         Date timestamp, Integer batchNum) {
+                         Date timestamp, Integer batchNum,
+                         Double sentiment_24h, Double sentimentChange_24h) {
         this.symbol = symbol;
         this.twitterChange_24h = twitterChange_24h;
         this.twitterVolume_24h = twitterVolume_24h;
@@ -93,6 +106,8 @@ public class CoinSentiment {
         this.socialVolume_24h = socialVolume_24h;
         this.timestamp = timestamp;
         this.batchNum = batchNum;
+        this.sentiment_24h = sentiment_24h;
+        this.sentimentChange_24h = sentimentChange_24h;
     }
 
     /**
@@ -179,6 +194,22 @@ public class CoinSentiment {
         this.batchNum = batchNum;
     }
 
+    public Double getSentiment_24h() {
+        return sentiment_24h;
+    }
+
+    public void setSentiment_24h(Double sentiment_24h) {
+        this.sentiment_24h = sentiment_24h;
+    }
+
+    public Double getSentimentChange_24h() {
+        return sentimentChange_24h;
+    }
+
+    public void setSentimentChange_24h(Double sentimentChange_24h) {
+        this.sentimentChange_24h = sentimentChange_24h;
+    }
+
     @Override
     public boolean equals(Object o) {
         CoinSentiment cs = (CoinSentiment) o;
@@ -195,7 +226,9 @@ public class CoinSentiment {
                 socialVolumeChange_24h.hashCode() ^
                 socialVolume_24h.hashCode() ^
                 timestamp.hashCode() ^
-                batchNum.hashCode();
+                batchNum.hashCode() ^
+                sentiment_24h.hashCode() ^
+                sentimentChange_24h.hashCode();
     }
 
 }
