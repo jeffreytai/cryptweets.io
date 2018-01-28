@@ -9,6 +9,7 @@ import com.crypto.utils.ApiUtils;
 import com.crypto.utils.DbUtils;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import org.javatuples.Pair;
 import org.springframework.core.io.ResourceLoader;
 
 import java.io.IOException;
@@ -190,11 +191,15 @@ public class SolumeIO {
             SlackWebhook slack = new SlackWebhook(this.SLACK_ALERT_USERNAME);
 
             for (CoinSentiment sentiment : filteredSentiments) {
-                String message = String.format("*%s* has an increase of %s%% in social volume and %s of %s%% in sentiment",
+                Pair<Double, Double> tickerPrice = getTickerPrice(sentiment.getSymbol());
+
+                String message = String.format("*%s* has an increase of %s%% in social volume and %s of %s%% in sentiment. The price went from $%s to $%s",
                         sentiment.getSymbol(),
                         sentiment.getSocialVolumeChange_24h().setScale(2, RoundingMode.FLOOR).toString(),
                         sentiment.getSentimentChange_24h() >= 0 ? "an increase" : "a decrease",
-                        sentiment.getSentimentChange_24h().toString());
+                        sentiment.getSentimentChange_24h().toString(),
+                        tickerPrice.getValue0().toString(),
+                        tickerPrice.getValue1().toString());
 
                 slack.sendMessage(message);
             }
@@ -203,5 +208,20 @@ public class SolumeIO {
         }
     }
 
+    private Pair<Double, Double> getTickerPrice(String ticker) {
+        String currentPriceUrl = "https://min-api.cryptocompare.com/data/price?fsym=" + ticker + "&tsyms=USD";
+        JsonObject currentPriceJson = ApiUtils.getJsonResponseBody(currentPriceUrl);
+        Double currentPrice = Double.parseDouble(currentPriceJson.get("USD").getAsString());
+
+        Long currentUnixTime = new Date().getTime();
+        Long dayInMilliseconds = 24L * 60L * 60L;
+        Long yesterdayUnixTime = currentUnixTime - dayInMilliseconds;
+
+        String yesterdayPriceUrl = "https://min-api.cryptocompare.com/data/pricehistorical?fsym=" + ticker + "&tsyms=USD&ts=" + yesterdayUnixTime;
+        JsonObject yesterdayPriceJson = ApiUtils.getJsonResponseBody(yesterdayPriceUrl);
+        Double yesterdayPrice = Double.parseDouble(yesterdayPriceJson.get(ticker).getAsJsonObject().get("USD").getAsString());
+
+        return new Pair<>(yesterdayPrice, currentPrice);
+    }
 
 }
