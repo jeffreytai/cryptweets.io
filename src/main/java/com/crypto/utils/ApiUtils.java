@@ -93,4 +93,10 @@ public class ApiUtils {
 
         return null;
     }
+
+    public static JsonObject getJsonResponseBody(final String requestUrl) {
+        String responseBody = getResponseBody(requestUrl);
+        JsonObject obj = new JsonParser().parse(responseBody).getAsJsonObject();
+        return obj;
+    }
 }
